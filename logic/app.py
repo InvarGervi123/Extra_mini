@@ -17,6 +17,15 @@ from logic.scene_end import EndScene
 class App:
     def __init__(self) -> None:
         pygame.init()
+        
+        # ---------- MUSIC (background) ----------
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/music/background.mp3")
+        pygame.mixer.music.set_volume(0.3)  # 0.0 - 1.0
+        pygame.mixer.music.play(-1)         # -1 = loop forever
+        # ---------------------------------------
+
+        
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Tank Duel (Simple)")
 
