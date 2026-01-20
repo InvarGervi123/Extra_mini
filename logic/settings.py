@@ -13,3 +13,5 @@ BG = (18, 18, 24)
 # Custom Events (נדרש לפחות 2)
 POWERUP_EVENT = pygame.USEREVENT + 1   # spawn כוח
 ROUND_TICK_EVENT = pygame.USEREVENT + 2  # טיימר של סיבוב
+
+ANIM_TICK_EVENT = pygame.USEREVENT + 3  # טיק קבוע לאנימציות (פיצוצים/הבהובים)

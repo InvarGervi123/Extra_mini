@@ -17,8 +17,8 @@ import pygame
 
 from interfaces.scene import IScene
 from interfaces.controller import P1Controller, P2Controller
-from logic.settings import WIDTH, HEIGHT, BG, POWERUP_EVENT, ROUND_TICK_EVENT
-from logic.sprites import Tank, Bullet, Wall, PowerUp
+from logic.settings import WIDTH, HEIGHT, BG, POWERUP_EVENT, ROUND_TICK_EVENT, ANIM_TICK_EVENT
+from logic.sprites import Tank, Bullet, Wall, PowerUp, Explosion
 
 
 class GameScene(IScene):
@@ -33,6 +33,9 @@ class GameScene(IScene):
         self.powerups = pygame.sprite.Group()
         self.all = pygame.sprite.Group()
 
+        self.explosions = pygame.sprite.Group()
+
+
         self._build_walls()
 
         self.p1 = Tank("p1", (70, 170, 255), (140, HEIGHT // 2), P1Controller())
@@ -45,6 +48,9 @@ class GameScene(IScene):
         # Custom event timers
         pygame.time.set_timer(POWERUP_EVENT, 6000)
         pygame.time.set_timer(ROUND_TICK_EVENT, 1000)
+
+        pygame.time.set_timer(ANIM_TICK_EVENT, 120)  # כל 120ms מקדמים פריימים באנימציות
+
 
     def _add(self, sprite: pygame.sprite.Sprite, group: pygame.sprite.Group) -> None:
         self.all.add(sprite)
@@ -77,6 +83,16 @@ class GameScene(IScene):
             self.time_left -= 1
             if self.time_left <= 0:
                 self._finish_by_time()
+
+        if event.type == ANIM_TICK_EVENT:
+        # מקדם פריימים של PowerUps
+            for pu in self.powerups:
+                pu.next_frame()
+
+            # מקדם פריימים של פיצוצים
+            for ex in self.explosions:
+                ex.next_frame()
+
 
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
@@ -123,6 +139,9 @@ class GameScene(IScene):
             b.kill()
             if isinstance(hit, Tank):
                 hit.hp -= 1
+                ex = Explosion(hit.rect.center)
+                self._add(ex, self.explosions)
+
 
     def _handle_powerups(self) -> None:
         for tank in (self.p1, self.p2):
@@ -155,6 +174,9 @@ class GameScene(IScene):
 
     def _finish(self, message: str) -> None:
         self._stop_timers()
+
+        pygame.time.set_timer(ANIM_TICK_EVENT, 0)
+
         self.change_scene("end", message)
 
     def _stop_timers(self) -> None:

@@ -109,10 +109,67 @@ class Wall(pygame.sprite.Sprite):
 
 
 class PowerUp(pygame.sprite.Sprite):
-    """PowerUp שמוסיף חיים לטנק שנוגע בו."""
+    """
+    PowerUp עם אנימציה של “פולס” (גדל/קטן).
+    הפריימים מתקדמים דרך EVENT (ANIM_TICK_EVENT), לא דרך update.
+    """
 
     def __init__(self, center: tuple[int, int]):
         super().__init__()
-        self.image = pygame.Surface((18, 18))
-        self.image.fill((90, 255, 120))
+        self.frames = self._make_frames()
+        self.frame_index = 0
+
+        self.image = self.frames[self.frame_index]
+        self.rect = self.image.get_rect(center=center)
+
+    def _make_frames(self) -> list[pygame.Surface]:
+        # 6 פריימים של ריבוע ירוק שגדל/קטן
+        sizes = [16, 18, 20, 18, 16, 14]
+        frames = []
+        for s in sizes:
+            surf = pygame.Surface((s, s), pygame.SRCALPHA)
+            pygame.draw.rect(surf, (90, 255, 120, 255), pygame.Rect(0, 0, s, s), border_radius=4)
+            frames.append(surf)
+        return frames
+
+    def next_frame(self) -> None:
+        self.frame_index = (self.frame_index + 1) % len(self.frames)
+        center = self.rect.center
+        self.image = self.frames[self.frame_index]
+        self.rect = self.image.get_rect(center=center)
+
+
+
+
+class Explosion(pygame.sprite.Sprite):
+    """
+    Explosion אנימציה “פריימים”.
+    לא משתמשים ב-update בשביל פריימים, אלא מקדמים פריים רק דרך EVENT.
+    """
+
+    def __init__(self, center: tuple[int, int]):
+        super().__init__()
+        self.frames: list[pygame.Surface] = self._make_frames()
+        self.frame_index = 0
+
+        self.image = self.frames[self.frame_index]
+        self.rect = self.image.get_rect(center=center)
+
+    def _make_frames(self) -> list[pygame.Surface]:
+        # פריימים פשוטים: עיגול גדל (ממש קל להסביר בהגנה)
+        sizes = [10, 16, 24, 32, 40]
+        frames = []
+        for s in sizes:
+            surf = pygame.Surface((s, s), pygame.SRCALPHA)
+            pygame.draw.circle(surf, (255, 200, 60, 220), (s // 2, s // 2), s // 2)
+            frames.append(surf)
+        return frames
+
+    def next_frame(self) -> None:
+        self.frame_index += 1
+        if self.frame_index >= len(self.frames):
+            self.kill()
+            return
+        center = self.rect.center
+        self.image = self.frames[self.frame_index]
         self.rect = self.image.get_rect(center=center)
